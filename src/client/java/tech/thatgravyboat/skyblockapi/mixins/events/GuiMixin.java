@@ -64,12 +64,9 @@ public class GuiMixin {
         return !new RenderHudElementEvent(HudElement.FOOD, graphics).post(SkyBlockAPI.getEventBus());
     }
 
-    @Inject(method = "renderPlayerHealth", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V"), cancellable = true)
-    private void onAirRender(GuiGraphics guiGraphics, CallbackInfo ci) {
-        if (new RenderHudElementEvent(HudElement.AIR, guiGraphics).post(SkyBlockAPI.getEventBus())) {
-            this.minecraft.getProfiler().pop();
-            ci.cancel();
-        }
+    @WrapWithCondition(method = "renderPlayerHealth", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderAirBubbles(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/entity/player/Player;III)V"))
+    private boolean onRenderAir(Gui instance, GuiGraphics graphics, Player player, int i, int j, int k) {
+        return !new RenderHudElementEvent(HudElement.AIR, graphics).post(SkyBlockAPI.getEventBus());
     }
 
     @Inject(method = "displayScoreboardSidebar", at = @At("HEAD"), cancellable = true)

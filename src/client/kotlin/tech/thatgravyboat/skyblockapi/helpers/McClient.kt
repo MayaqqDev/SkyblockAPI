@@ -5,7 +5,7 @@ import com.mojang.brigadier.CommandDispatcher
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.ChatComponent
-import net.minecraft.client.gui.components.toasts.ToastComponent
+import net.minecraft.client.gui.components.toasts.ToastManager
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.multiplayer.PlayerInfo
@@ -67,8 +67,8 @@ object McClient {
 
     val scoreboardTitle get() = self.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR)?.displayName
 
-    val toasts: ToastComponent
-        get() = self.toasts
+    val toasts: ToastManager
+        get() = self.toastManager
 
     val serverCommands: CommandDispatcher<SharedSuggestionProvider>?
         get() = self.connection?.commands
@@ -77,7 +77,7 @@ object McClient {
         get() = self.gui.chat
 
     fun tell(action: () -> Unit) {
-        self.tell(action)
+        self.schedule(action)
     }
 
     fun setScreen(screen: Screen?) {

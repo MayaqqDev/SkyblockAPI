@@ -10,7 +10,6 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
-import net.minecraft.world.InteractionResultHolder
 import tech.thatgravyboat.skyblockapi.api.SkyBlockAPI
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
 import tech.thatgravyboat.skyblockapi.api.events.level.*
@@ -42,9 +41,9 @@ object MiscEventHandler {
         UseItemCallback.EVENT.register { player, _, hand ->
             val stack = player.getItemInHand(hand)
             if (RightClickItemEvent(stack).post(SkyBlockAPI.eventBus)) {
-                InteractionResultHolder.fail(stack)
+                InteractionResult.FAIL
             }
-            InteractionResultHolder.pass(stack)
+            InteractionResult.PASS
         }
         UseBlockCallback.EVENT.register { player, _, hand, result ->
             val stack = player.getItemInHand(hand)

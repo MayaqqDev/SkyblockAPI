@@ -14,7 +14,7 @@ import tech.thatgravyboat.skyblockapi.api.events.render.RenderItemBarEvent;
 @Mixin(GuiGraphics.class)
 public class GuiGraphicsMixin {
 
-    @WrapOperation(method = "renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isBarVisible()Z"))
+    @WrapOperation(method = "renderItemBar", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isBarVisible()Z"))
     private boolean itemBarVisible(ItemStack instance, Operation<Boolean> original, @Share("bar") LocalRef<RenderItemBarEvent> bar) {
         var event = new RenderItemBarEvent(instance, -1, 0f);
         event.post(SkyBlockAPI.getEventBus());
@@ -22,7 +22,7 @@ public class GuiGraphicsMixin {
         return event.getPercent() > 0f || original.call(instance);
     }
 
-    @WrapOperation(method = "renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getBarWidth()I"))
+    @WrapOperation(method = "renderItemBar", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getBarWidth()I"))
     private int itemBarWidth(ItemStack instance, Operation<Integer> original, @Share("bar") LocalRef<RenderItemBarEvent> bar) {
         if (bar.get() != null) {
             return (int) (bar.get().getPercent() * 13);
@@ -30,7 +30,7 @@ public class GuiGraphicsMixin {
         return original.call(instance);
     }
 
-    @WrapOperation(method = "renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getBarColor()I"))
+    @WrapOperation(method = "renderItemBar", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getBarColor()I"))
     private int itemBarColor(ItemStack instance, Operation<Integer> original, @Share("bar") LocalRef<RenderItemBarEvent> bar) {
         if (bar.get() != null) {
             return bar.get().getColor();
