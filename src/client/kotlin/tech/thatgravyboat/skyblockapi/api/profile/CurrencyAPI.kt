@@ -113,7 +113,7 @@ object CurrencyAPI {
                     this.copper = copper.parseFormattedLong()
                 }
             }
-            purseRegex.anyMatch(event.added, "purse") { (type, purse) ->
+            purseRegex.anyMatch(event.added, "type", "purse") { (type, purse) ->
                 this.purse = purse.parseFormattedDouble()
                 this.purseType = when (type.lowercase()) {
                     "purse" -> PurseType.NORMAL
