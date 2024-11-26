@@ -127,16 +127,28 @@ fun Long.toFormattedString(): String = NumberFormat.getNumberInstance().format(t
 fun Float.toFormattedString(): String = DecimalFormat.getNumberInstance().format(this)
 fun Double.toFormattedString(): String = DecimalFormat.getNumberInstance().format(this)
 
-fun Int.toRomanNumeral(): String {
-    var number = this
-    val roman = StringBuilder()
-    romanNumerals.entries.reversed().forEach { (letter, value) ->
-        while (number >= value) {
-            roman.append(letter)
-            number -= value
+private val thousandsPlace = listOf("", "M", "MM", "MMM")
+private val hundreadsPlace = listOf("", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM")
+private val tensPlace = listOf("", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC")
+private val onesPlace = listOf("", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX")
+
+/**
+ * @param subtractive This refers to if it should preform subtractions for numbers such as 4 if true it will be IV if false it will be IIII
+ */
+fun Int.toRomanNumeral(subtractive: Boolean = false): String {
+    if (subtractive) {
+        return thousandsPlace[this / 1000] + hundreadsPlace[this % 1000 / 100] + tensPlace[this % 100 / 10] + onesPlace[this % 10]
+    } else {
+        var number = this
+        val roman = StringBuilder()
+        romanNumerals.entries.reversed().forEach { (letter, value) ->
+            while (number >= value) {
+                roman.append(letter)
+                number -= value
+            }
         }
+        return roman.toString()
     }
-    return roman.toString()
 }
 
 fun String.stripColor(): String = StringUtil.stripColor(this)
