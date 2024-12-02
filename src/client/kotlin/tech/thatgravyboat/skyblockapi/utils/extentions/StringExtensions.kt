@@ -1,6 +1,5 @@
 package tech.thatgravyboat.skyblockapi.utils.extentions
 
-import net.minecraft.util.StringUtil
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findGroup
 import tech.thatgravyboat.skyblockapi.utils.regex.Regexes
 import java.text.DecimalFormat
@@ -15,7 +14,7 @@ private val colorCodesEnd = Regex("^(?<end>(.§| )*)(?!.§| )")
 private val formattedMultiplier = mapOf(
     "k" to 1_000L,
     "m" to 1_000_000L,
-    "b" to 1_000_000_000L
+    "b" to 1_000_000_000L,
 )
 
 private val romanNumerals = mapOf(
@@ -25,7 +24,7 @@ private val romanNumerals = mapOf(
     'L' to 50,
     'C' to 100,
     'D' to 500,
-    'M' to 1000
+    'M' to 1000,
 )
 
 internal fun String?.toIntValue(): Int = runCatching {
@@ -64,6 +63,8 @@ internal fun String?.parseFormattedDouble(): Double = runCatching {
 
 internal fun String?.parseFormattedFloat(): Float = parseFormattedDouble().toFloat()
 
+internal fun String?.parseRomanOrArabic(): Int = parseRomanNumeral().takeIf { it != 0 } ?: toIntValue()
+
 internal fun String?.parseDuration(): Duration? = runCatching {
     var total = 0L
     var current = 0L
@@ -85,7 +86,29 @@ internal fun String?.parseDuration(): Duration? = runCatching {
     return@runCatching total.seconds
 }.getOrNull()
 
-internal fun String?.parseRomanOrArabic(): Int = parseRomanNumeral().takeIf { it != 0 } ?: toIntValue()
+internal fun String?.parseWordDuration(): Duration? = runCatching {
+    var total = 0L
+    var current = ""
+    this?.split(" ", ", ", " and ")?.forEach {
+        if (it.toIntOrNull() != null) {
+            current = it
+        } else {
+            val value = current.toLongOrNull() ?: 0L
+            total += value * when (it.lowercase()) {
+                "second", "seconds" -> 1
+                "minute", "minutes" -> 60
+                "hour", "hours" -> 60 * 60
+                "day", "days" -> 60 * 60 * 24
+                "week", "weeks" -> 60 * 60 * 24 * 7
+                "month", "months" -> 60 * 60 * 24 * 30
+                "year", "years" -> 60 * 60 * 24 * 365
+                else -> 0
+            }
+            current = ""
+        }
+    }
+    return@runCatching total.seconds
+}.getOrNull()
 
 internal fun String?.parseColonDuration(): Duration? = runCatching {
     val splits = this?.split(":") ?: return@runCatching null
@@ -115,8 +138,10 @@ private val regexGroup = Regexes.group("string")
 
 private val cleanPlayerNameRegex = regexGroup.create(
     "clean.playername",
-    "(?:(?<rank>\\[.+]) ?)?(?<name>[a-zA-Z0-9_]+)"
+    "(?:(?<rank>\\[.+]) ?)?(?<name>[a-zA-Z0-9_]+)",
 )
+
+private val formattingCodesRegex = Regex("§.")
 
 internal fun String.cleanPlayerName(): String {
     return cleanPlayerNameRegex.findGroup(this, "name") ?: this
@@ -151,7 +176,8 @@ fun Int.toRomanNumeral(subtractive: Boolean = false): String {
     }
 }
 
-fun String.stripColor(): String = StringUtil.stripColor(this)
+fun String.stripColor(): String = formattingCodesRegex.replace(this, "")
+
 
 fun String.trimIgnoreColor(): String {
     val start = colorCodesStart.find(this)?.groups?.get("start")?.value ?: ""
