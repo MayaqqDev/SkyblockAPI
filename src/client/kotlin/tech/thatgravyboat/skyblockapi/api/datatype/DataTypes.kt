@@ -5,6 +5,7 @@ import tech.thatgravyboat.skyblockapi.api.data.SkyBlockCategory
 import tech.thatgravyboat.skyblockapi.api.data.SkyBlockRarity
 import tech.thatgravyboat.skyblockapi.api.datatype.defaults.GenericDataTypes
 import tech.thatgravyboat.skyblockapi.api.datatype.defaults.LoreDataTypes
+import tech.thatgravyboat.skyblockapi.api.datatype.defaults.PersonalAccessoryDataTypes
 import kotlin.time.Duration
 
 object DataTypes {
@@ -23,4 +24,7 @@ object DataTypes {
     val SECONDS_HELD: DataType<Int> = GenericDataTypes.SECONDS_HELD
     val PICKONIMBUS_DURABILITY: DataType<Int> = GenericDataTypes.PICKONIMBUS_DURABILITY
     val QUIVER_ARROW: DataType<Boolean> = GenericDataTypes.QUIVER_ARROW
+    val PERSONAL_COMPACTOR_ITEMS: DataType<List<String?>> = PersonalAccessoryDataTypes.PERSONAL_COMPACTOR_ITEMS
+    val PERSONAL_DELETOR_ITEMS: DataType<List<String?>> = PersonalAccessoryDataTypes.PERSONAL_DELETOR_ITEMS
+    val PERSONAL_ACCESSORY_ACTIVE: DataType<Boolean> = PersonalAccessoryDataTypes.PERSONAL_ACCESSORY_ACTIVE
 }
