@@ -1,6 +1,18 @@
 package tech.thatgravyboat.skyblockapi.api.data
 
-data class SkyBlockCategory(val name: String, val isDungeon: Boolean = false) {
+class SkyBlockCategory private constructor(
+    val name: String,
+    val isDungeon: Boolean = false
+) {
+
+    fun equals(other: SkyBlockCategory, ignoreDungeon: Boolean = false): Boolean =
+        if (!ignoreDungeon) this === other else this.name == other.name
+
+    fun equalsAny(vararg others: SkyBlockCategory, ignoreDungeon: Boolean = false): Boolean =
+        others.any { equals(it, ignoreDungeon) }
+
+    override fun toString(): String = if (isDungeon) "dungeon $name" else name
+
     @Suppress("unused")
     companion object {
         private val registeredCategories = mutableMapOf<String, SkyBlockCategory>()
@@ -27,5 +39,9 @@ data class SkyBlockCategory(val name: String, val isDungeon: Boolean = false) {
         val BRACELET = create("bracelet")
         val DUNGEON_BRACELET = create("dungeon bracelet")
         val ARROW = create("arrow")
+        val ACCESSORY = create("accessory")
+        val DUNGEON_ACCESSORY = create("dungeon accessory")
+        val HATCESSORY = create("hatcessory")
+
     }
 }
