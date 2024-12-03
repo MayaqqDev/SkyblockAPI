@@ -92,7 +92,6 @@ object EffectsAPI {
         cookieTabWidgetRegex.anyMatch(event.new, "duration") { (duration) ->
             val parsedDuration = duration.parseDuration() ?: return@anyMatch
             updateBoosterCookieExpireTime(parsedDuration)
-            readlnOrNull()
         }
         godPotionWidgetRegex.anyMatch(event.new, "duration") { (duration) ->
             val parsedDuration = duration.parseDuration() ?: return@anyMatch
