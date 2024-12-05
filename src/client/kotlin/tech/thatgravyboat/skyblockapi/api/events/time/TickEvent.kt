@@ -9,7 +9,7 @@ object TickEvent : SkyBlockEvent() {
 
     override fun post(bus: EventBus): Boolean {
         ticks++
-        return super.post(bus)
+        return bus.post(this, ticks)
     }
 }
 

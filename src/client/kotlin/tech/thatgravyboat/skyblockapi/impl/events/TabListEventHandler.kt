@@ -5,6 +5,8 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundTabListPacket
 import tech.thatgravyboat.skyblockapi.api.SkyBlockAPI
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
+import tech.thatgravyboat.skyblockapi.api.events.base.predicates.OnlyOnSkyBlock
+import tech.thatgravyboat.skyblockapi.api.events.base.predicates.TimePassed
 import tech.thatgravyboat.skyblockapi.api.events.hypixel.ServerChangeEvent
 import tech.thatgravyboat.skyblockapi.api.events.info.TabListChangeEvent
 import tech.thatgravyboat.skyblockapi.api.events.info.TabListHeaderFooterChangeEvent
@@ -24,7 +26,6 @@ import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.contains
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 
 private const val TAB_LIST_LENGTH = 80
-private const val CHECK_INTERVAL = 1000
 
 @Module
 object TabListEventHandler {
@@ -66,7 +67,6 @@ object TabListEventHandler {
     )
 
     private var tabList = emptyList<List<String>>()
-    private var lastCheck = 0L
 
     private var header: Component = CommonComponents.EMPTY
     private var footer: Component = CommonComponents.EMPTY
@@ -81,11 +81,9 @@ object TabListEventHandler {
     }
 
     @Subscription
+    @OnlyOnSkyBlock
+    @TimePassed("1s")
     fun onTick(event: TickEvent) {
-        if (!LocationAPI.isOnSkyBlock) return
-        if (System.currentTimeMillis() - lastCheck < CHECK_INTERVAL) return
-        lastCheck = System.currentTimeMillis()
-
         val newTabList = McClient.tablist.take(TAB_LIST_LENGTH).map { it.displayName }.chunked(20)
         val newStringTabList = newTabList.map { it.map { it.stripped } }
 

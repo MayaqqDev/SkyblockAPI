@@ -6,6 +6,7 @@ import java.text.DecimalFormat
 import java.text.NumberFormat
 import kotlin.math.pow
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 private val colorCodesStart = Regex("^(?<start>(§.| )*)(?!§.| )")
@@ -73,17 +74,18 @@ internal fun String?.parseDuration(): Duration? = runCatching {
             it.isDigit() -> current = current * 10 + it.toString().toLong()
             it.isLetter() -> {
                 total += current * when (it) {
-                    's' -> 1
-                    'm' -> 60
-                    'h' -> 60 * 60
-                    'd' -> 60 * 60 * 24
+                    't' -> 50
+                    's' -> 1000
+                    'm' -> 60 * 1000
+                    'h' -> 60 * 60 * 1000
+                    'd' -> 24 * 60 * 60 * 1000
                     else -> 0
                 }
                 current = 0
             }
         }
     }
-    return@runCatching total.seconds
+    return@runCatching total.milliseconds
 }.getOrNull()
 
 internal fun String?.parseWordDuration(): Duration? = runCatching {

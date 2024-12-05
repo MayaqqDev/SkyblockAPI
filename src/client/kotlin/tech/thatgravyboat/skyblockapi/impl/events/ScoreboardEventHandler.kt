@@ -2,31 +2,27 @@ package tech.thatgravyboat.skyblockapi.impl.events
 
 import tech.thatgravyboat.skyblockapi.api.SkyBlockAPI
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
+import tech.thatgravyboat.skyblockapi.api.events.base.predicates.OnlyOnSkyBlock
+import tech.thatgravyboat.skyblockapi.api.events.base.predicates.TimePassed
 import tech.thatgravyboat.skyblockapi.api.events.info.ScoreboardTitleUpdateEvent
 import tech.thatgravyboat.skyblockapi.api.events.info.ScoreboardUpdateEvent
 import tech.thatgravyboat.skyblockapi.api.events.time.TickEvent
-import tech.thatgravyboat.skyblockapi.api.location.LocationAPI
 import tech.thatgravyboat.skyblockapi.api.profile.profile.ProfileAPI
 import tech.thatgravyboat.skyblockapi.helpers.McClient
 import tech.thatgravyboat.skyblockapi.modules.Module
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 
-private const val CHECK_INTERVAL = 1000
-
 @Module
 object ScoreboardEventHandler {
-
-    private var lastCheck = 0L
 
     private var scoreboard = listOf<String>()
     private var currentTitle: String? = null
 
     @Subscription
+    @OnlyOnSkyBlock
+    @TimePassed("1s")
     fun onTick(event: TickEvent) {
-        if (!LocationAPI.isOnSkyBlock) return
-        if (System.currentTimeMillis() - lastCheck < CHECK_INTERVAL) return
         if (!ProfileAPI.isLoaded) return
-        lastCheck = System.currentTimeMillis()
 
         handleScoreboard()
         handleTitle()
