@@ -6,7 +6,7 @@ import tech.thatgravyboat.skyblockapi.api.data.SkyBlockRarity
 import tech.thatgravyboat.skyblockapi.api.datatype.defaults.GenericDataTypes
 import tech.thatgravyboat.skyblockapi.api.datatype.defaults.LoreDataTypes
 import tech.thatgravyboat.skyblockapi.api.datatype.defaults.PersonalAccessoryDataTypes
-import java.util.UUID
+import java.util.*
 import kotlin.time.Duration
 
 object DataTypes {
@@ -30,4 +30,6 @@ object DataTypes {
     val PERSONAL_DELETOR_ITEMS: DataType<List<String?>> = PersonalAccessoryDataTypes.PERSONAL_DELETOR_ITEMS
     val PERSONAL_ACCESSORY_ACTIVE: DataType<Boolean> = PersonalAccessoryDataTypes.PERSONAL_ACCESSORY_ACTIVE
     val ENCHANTMENTS: DataType<Map<String, Int>> = GenericDataTypes.ENCHANTMENTS
+    val POTION: DataType<String> = GenericDataTypes.POTION
+    val POTION_LEVEL: DataType<Int> = GenericDataTypes.POTION_LEVEL
 }

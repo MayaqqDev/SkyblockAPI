@@ -9,7 +9,7 @@ import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
 import tech.thatgravyboat.skyblockapi.api.events.misc.RegisterDataTypesEvent
 import tech.thatgravyboat.skyblockapi.modules.Module
 import tech.thatgravyboat.skyblockapi.utils.extentions.getTag
-import java.util.UUID
+import java.util.*
 
 @Module
 object GenericDataTypes {
@@ -22,9 +22,13 @@ object GenericDataTypes {
     val PICKONIMBUS_DURABILITY: DataType<Int> = DataType("pickonimbus_durability") { it.getTag("pickonimbus_durability")?.asInt }
     val RARITY_UPGRADES: DataType<Int> = DataType("rarity_upgrades") { it.getTag("rarity_upgrades")?.asInt }
     val QUIVER_ARROW: DataType<Boolean> = DataType("quiver_arrow") { it.getTag("quiver_arrow")?.asString?.equals("true") }
-    val ENCHANTMENTS: DataType<Map<String, Int>> = DataType("enchantments") { it.getTag("enchantment")?.asObject?.let { tag ->
-        buildMap { tag.allKeys.forEach { key -> this[key] = tag.getInt(key) } } }
+    val ENCHANTMENTS: DataType<Map<String, Int>> = DataType("enchantments") {
+        it.getTag("enchantment")?.asObject?.let { tag ->
+            buildMap { tag.allKeys.forEach { key -> this[key] = tag.getInt(key) } }
+        }
     }
+    val POTION: DataType<String> = DataType("potion") { it.getTag("potion")?.asString }
+    val POTION_LEVEL: DataType<Int> = DataType("potion_level") { it.getTag("potion_level")?.asInt }
 
     @Subscription
     fun onDataTypeRegistration(event: RegisterDataTypesEvent) {
@@ -37,6 +41,8 @@ object GenericDataTypes {
         event.register(RARITY_UPGRADES)
         event.register(QUIVER_ARROW)
         event.register(ENCHANTMENTS)
+        event.register(POTION)
+        event.register(POTION_LEVEL)
     }
 
     private val Tag.asInt get() = (this as? NumericTag)?.asInt
