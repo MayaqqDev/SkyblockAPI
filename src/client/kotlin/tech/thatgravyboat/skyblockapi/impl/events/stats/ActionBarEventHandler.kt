@@ -8,10 +8,7 @@ import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
 import tech.thatgravyboat.skyblockapi.api.events.chat.ActionBarReceivedEvent
 import tech.thatgravyboat.skyblockapi.api.events.info.*
 import tech.thatgravyboat.skyblockapi.modules.Module
-import tech.thatgravyboat.skyblockapi.utils.extentions.parseDuration
-import tech.thatgravyboat.skyblockapi.utils.extentions.toFloatValue
-import tech.thatgravyboat.skyblockapi.utils.extentions.toIntValue
-import tech.thatgravyboat.skyblockapi.utils.extentions.trimIgnoreColor
+import tech.thatgravyboat.skyblockapi.utils.extentions.*
 import tech.thatgravyboat.skyblockapi.utils.regex.Destructured
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexGroup
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.find
@@ -63,7 +60,7 @@ object ActionBarEventHandler {
         ActionBarWidgetType(ActionBarWidget.NO_MANA, "§c§lNOT ENOUGH MANA"),
         // §a§lⓩⓩⓩ§2§lⓄⓄ
         // §a§lⓩⓩⓩⓩⓩ§2§l
-        ActionBarWidgetType(ActionBarWidget.CHARGES, "§a§l(?<maxcharges>(?<charges>ⓩ*)§2§l)"),
+        ActionBarWidgetType(ActionBarWidget.CHARGES, "§a§l(?<maxcharges>(?<charges>ⓩ*)§2§lⓄ*)"),
         // §b+3 SkyBlock XP §7(Accessory Bag§7)§b (68/100)
         ActionBarWidgetType(ActionBarWidget.SKYBLOCK_XP, "§.\\+(?<amount>[\\d,]+) SkyBlock XP"),
         // §b-100 Mana (§6Dragon Rage§b)
@@ -94,6 +91,10 @@ object ActionBarEventHandler {
             SecretsActionBarWidgetChangeEvent(0, 0, it.string, "")
         }) { old, it ->
             SecretsActionBarWidgetChangeEvent(it["current"].toIntValue(), it["max"].toIntValue(), old, it.string)
+        },
+        // §2936/3k Drill Fuel
+        ActionBarWidgetType(ActionBarWidget.DRILL_FUEL, "§2(?<current>\\d+)/(?<max>\\d+[kmb]?) Drill Fuel") { old, it ->
+            DrillActionBarWidgetChangeEvent(it["current"].parseFormattedInt(), it["max"].parseFormattedInt(), old, it.string)
         },
     )
 
