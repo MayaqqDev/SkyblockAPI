@@ -12,6 +12,7 @@ import tech.thatgravyboat.skyblockapi.utils.extentions.*
 import tech.thatgravyboat.skyblockapi.utils.regex.Destructured
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexGroup
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.find
+import tech.thatgravyboat.skyblockapi.utils.text.Text
 
 data class ActionBarWidgetType(
     val widget: ActionBarWidget,
@@ -29,7 +30,7 @@ data class ActionBarWidgetType(
         widget,
         RegexGroup.ACTIONBAR_WIDGET.create(widget.name.lowercase(), regex),
         factory,
-        removalFactory
+        removalFactory,
     )
 }
 
@@ -51,9 +52,12 @@ object ActionBarEventHandler {
             ManaActionBarWidgetChangeEvent(it["mana"].toIntValue(), it["maxmana"].toIntValue(), old, it.string)
         },
         // §3400ʬ
-        ActionBarWidgetType(ActionBarWidget.OVERFLOW_MANA, "§.(?<overflow>[\\d,]+)ʬ", {
-            OverflowManaActionBarWidgetChangeEvent(0, it.string, "")
-        }) { old, it ->
+        ActionBarWidgetType(
+            ActionBarWidget.OVERFLOW_MANA, "§.(?<overflow>[\\d,]+)ʬ",
+            {
+                OverflowManaActionBarWidgetChangeEvent(0, it.string, "")
+            },
+        ) { old, it ->
             OverflowManaActionBarWidgetChangeEvent(it["overflow"].toIntValue(), old, it.string)
         },
         // §c§lNOT ENOUGH MANA
@@ -79,17 +83,23 @@ object ActionBarEventHandler {
         },
         // §6§l10ᝐ
         // §65ᝐ
-        ActionBarWidgetType(ActionBarWidget.ARMOR_STACK, "§6(?:§l)?(?<amount>\\d+)(?<type>[ᝐ⁑|҉Ѫ⚶])", {
-            ArmorStackActionBarWidgetChangeEvent(0, ArmorStack.fromString(it["type"]), it.string, "")
-        }) { old, it ->
+        ActionBarWidgetType(
+            ActionBarWidget.ARMOR_STACK, "§6(?:§l)?(?<amount>\\d+)(?<type>[ᝐ⁑|҉Ѫ⚶])",
+            {
+                ArmorStackActionBarWidgetChangeEvent(0, ArmorStack.fromString(it["type"]), it.string, "")
+            },
+        ) { old, it ->
             ArmorStackActionBarWidgetChangeEvent(it["amount"].toIntValue(), ArmorStack.fromString(it["type"]), old, it.string)
         },
         // §a |||
         ActionBarWidgetType(ActionBarWidget.CELLS_ALIGNMENT, "§a \\|{3}"),
         // §71/6 Secrets
-        ActionBarWidgetType(ActionBarWidget.SECRETS, "§.(?<current>[\\d,]+)/(?<max>[\\d,]+) Secrets", {
-            SecretsActionBarWidgetChangeEvent(0, 0, it.string, "")
-        }) { old, it ->
+        ActionBarWidgetType(
+            ActionBarWidget.SECRETS, "§.(?<current>[\\d,]+)/(?<max>[\\d,]+) Secrets",
+            {
+                SecretsActionBarWidgetChangeEvent(0, 0, it.string, "")
+            },
+        ) { old, it ->
             SecretsActionBarWidgetChangeEvent(it["current"].toIntValue(), it["max"].toIntValue(), old, it.string)
         },
         // §2936/3k Drill Fuel
@@ -99,9 +109,12 @@ object ActionBarEventHandler {
     )
 
     private val widgets = mutableMapOf<ActionBarWidget, String>()
+    private val widgetsToHide = mutableListOf<String>()
 
     @Subscription
-    fun onActionbarReceived(event: ActionBarReceivedEvent) {
+    fun onActionbarReceivedPre(event: ActionBarReceivedEvent.Pre) {
+        widgetsToHide.clear()
+
         val parts = event.coloredText.split("     ")
         val output = parts.toMutableList()
         val foundWidgets = mutableSetOf<ActionBarWidget>()
@@ -110,6 +123,7 @@ object ActionBarEventHandler {
             for (type in types) {
                 type.regex.find(part) {
                     if (RenderActionBarWidgetEvent(type.widget).post(SkyBlockAPI.eventBus)) {
+                        widgetsToHide.add(it.string)
                         part = part.replace(it.string, "")
                     }
                     val old = widgets[type.widget] ?: ""
@@ -120,11 +134,6 @@ object ActionBarEventHandler {
                         type.factory(old, it).post(SkyBlockAPI.eventBus)
                     }
                 }
-            }
-            if (StringUtil.stripColor(part).isBlank()) {
-                output.remove(p)
-            } else {
-                output[output.indexOf(p)] = part
             }
         }
         for (widget in widgets.keys - foundWidgets) {
@@ -139,8 +148,24 @@ object ActionBarEventHandler {
 
         if (output.isEmpty()) {
             event.cancel()
-        } else if (output != parts) {
-            event.coloredText = output.joinToString("     ") { it.trimIgnoreColor() }
         }
+    }
+
+    @Subscription
+    fun onActionbarReceivedPost(event: ActionBarReceivedEvent.Post) {
+        event.component = Text.of(
+            event.coloredText.split("     ")
+                .map {
+                    var output = it
+                    widgetsToHide.removeIf { widget ->
+                        val before = output
+                        output = output.replace(widget, "")
+                        before != output
+                    }
+                    output
+                }
+                .filter { !StringUtil.stripColor(it).isBlank() }
+                .joinToString("     ") { it.trimIgnoreColor() },
+        )
     }
 }
