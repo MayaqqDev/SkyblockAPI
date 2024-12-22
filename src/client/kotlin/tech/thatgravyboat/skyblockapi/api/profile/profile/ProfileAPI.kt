@@ -3,28 +3,36 @@ package tech.thatgravyboat.skyblockapi.api.profile.profile
 import tech.thatgravyboat.skyblockapi.api.data.stored.ProfileStorage
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
 import tech.thatgravyboat.skyblockapi.api.events.base.predicates.OnlyWidget
+import tech.thatgravyboat.skyblockapi.api.events.chat.ChatReceivedEvent
 import tech.thatgravyboat.skyblockapi.api.events.hypixel.ServerChangeEvent
 import tech.thatgravyboat.skyblockapi.api.events.info.ScoreboardTitleUpdateEvent
 import tech.thatgravyboat.skyblockapi.api.events.info.TabWidget
 import tech.thatgravyboat.skyblockapi.api.events.info.TabWidgetChangeEvent
 import tech.thatgravyboat.skyblockapi.api.events.profile.ProfileChangeEvent
 import tech.thatgravyboat.skyblockapi.api.events.profile.ProfileLevelChangeEvent
+import tech.thatgravyboat.skyblockapi.api.events.time.TickEvent
 import tech.thatgravyboat.skyblockapi.api.location.SkyBlockIsland
 import tech.thatgravyboat.skyblockapi.modules.Module
 import tech.thatgravyboat.skyblockapi.utils.extentions.toFormattedName
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexGroup
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.anyMatch
+import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.match
 
 @Module
 object ProfileAPI {
 
-    private val widgetGroup = RegexGroup.TABLIST_WIDGET.group("profile")
-
     // Profile: Watermelon ♲
-    private val profileRegex = widgetGroup.create(
+    private val profileRegex = RegexGroup.TABLIST_WIDGET.group("profile").create(
         "name",
         "Profile: (?<name>.+)",
     )
+
+    private val profileChatRegex = RegexGroup.CHAT.group("profile").create(
+        "name",
+        "You are playing on profile: (?<name>.+)",
+    )
+
+    private var lastWordSwap = 0L
 
     var profileName: String? = null
         private set
@@ -41,6 +49,7 @@ object ProfileAPI {
     @Subscription
     fun onServerChange(event: ServerChangeEvent) {
         this.isLoaded = false
+        this.lastWordSwap = System.currentTimeMillis()
     }
 
     @OnlyWidget(TabWidget.PROFILE)
@@ -73,6 +82,24 @@ object ProfileAPI {
             if (oldName != this.profileName) {
                 ProfileChangeEvent(this.profileName!!).post()
             }
+            this.isLoaded = true
+        }
+    }
+
+    @Subscription
+    fun onChatMessage(event: ChatReceivedEvent.Pre) {
+        profileChatRegex.match(event.text, "name") { (name) ->
+            if (name != this.profileName) {
+                this.profileName = name
+                ProfileChangeEvent(this.profileName!!).post()
+            }
+            this.isLoaded = true
+        }
+    }
+
+    @Subscription
+    fun onTick(event: TickEvent) {
+        if (lastWordSwap + 5000 < System.currentTimeMillis() && this.profileName != null) {
             this.isLoaded = true
         }
     }

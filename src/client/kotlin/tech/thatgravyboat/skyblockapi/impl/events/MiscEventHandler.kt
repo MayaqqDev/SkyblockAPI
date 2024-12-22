@@ -5,11 +5,13 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
+import net.fabricmc.fabric.api.event.Event
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.core.BlockPos
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.InteractionResult
 import tech.thatgravyboat.skyblockapi.api.SkyBlockAPI
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
@@ -26,6 +28,8 @@ import tech.thatgravyboat.skyblockapi.modules.Module
 
 @Module
 object MiscEventHandler {
+
+    private val phase = ResourceLocation.fromNamespaceAndPath("skyblockapi", "phase")
 
     private val blocksClicked = CacheBuilder.newBuilder()
         .maximumSize(50)
@@ -70,7 +74,10 @@ object MiscEventHandler {
         }
 
         // Chat Events
-        ClientReceiveMessageEvents.ALLOW_GAME.register { message, overlay ->
+        ClientReceiveMessageEvents.ALLOW_GAME.addPhaseOrdering(phase, Event.DEFAULT_PHASE)
+        ClientReceiveMessageEvents.MODIFY_GAME.addPhaseOrdering(phase, Event.DEFAULT_PHASE)
+
+        ClientReceiveMessageEvents.ALLOW_GAME.register(phase) { message, overlay ->
             if (overlay) {
                 !ActionBarReceivedEvent.Pre(message).post()
             } else if (ChatReceivedEvent.Pre(message).post()) {
@@ -80,12 +87,7 @@ object MiscEventHandler {
                 true
             }
         }
-        ClientReceiveMessageEvents.GAME_CANCELED.register { message, overlay ->
-            val event = if (overlay) ActionBarReceivedEvent.Pre(message) else ChatReceivedEvent.Pre(message)
-            event.cancel()
-            event.post()
-        }
-        ClientReceiveMessageEvents.MODIFY_GAME.register { message, overlay ->
+        ClientReceiveMessageEvents.MODIFY_GAME.register(phase) { message, overlay ->
             if (overlay) {
                 ActionBarReceivedEvent.Post(message).let { event ->
                     event.post()
