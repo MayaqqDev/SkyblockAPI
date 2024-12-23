@@ -1,5 +1,6 @@
 package tech.thatgravyboat.skyblockapi.api.profile.profile
 
+import tech.thatgravyboat.skyblockapi.api.SkyBlockAPI
 import tech.thatgravyboat.skyblockapi.api.data.stored.ProfileStorage
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
 import tech.thatgravyboat.skyblockapi.api.events.base.predicates.OnlyWidget
@@ -32,7 +33,7 @@ object ProfileAPI {
         "You are playing on profile: (?<name>.+)",
     )
 
-    private var lastWordSwap = 0L
+    private var lastWorldSwap = 0L
 
     var profileName: String? = null
         private set
@@ -49,7 +50,7 @@ object ProfileAPI {
     @Subscription
     fun onServerChange(event: ServerChangeEvent) {
         this.isLoaded = false
-        this.lastWordSwap = System.currentTimeMillis()
+        this.lastWorldSwap = System.currentTimeMillis()
     }
 
     @OnlyWidget(TabWidget.PROFILE)
@@ -86,9 +87,10 @@ object ProfileAPI {
         }
     }
 
-    @Subscription
+    @Subscription(priority = Int.MIN_VALUE, receiveCancelled = true)
     fun onChatMessage(event: ChatReceivedEvent.Pre) {
         profileChatRegex.match(event.text, "name") { (name) ->
+            val name = name.removeSuffix("(Co-op)").trim()
             if (name != this.profileName) {
                 this.profileName = name
                 ProfileChangeEvent(this.profileName!!).post()
@@ -99,8 +101,8 @@ object ProfileAPI {
 
     @Subscription
     fun onTick(event: TickEvent) {
-        if (lastWordSwap + 5000 < System.currentTimeMillis() && this.profileName != null) {
-            this.isLoaded = true
+        if (lastWorldSwap + 2500 < System.currentTimeMillis() && !this.isLoaded) {
+            SkyBlockAPI.logger.error("Could not find way to determine profile name.")
         }
     }
 
