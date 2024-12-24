@@ -3,6 +3,7 @@ package tech.thatgravyboat.skyblockapi.api.profile.profile
 import tech.thatgravyboat.skyblockapi.api.SkyBlockAPI
 import tech.thatgravyboat.skyblockapi.api.data.stored.ProfileStorage
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
+import tech.thatgravyboat.skyblockapi.api.events.base.predicates.OnlyOnSkyBlock
 import tech.thatgravyboat.skyblockapi.api.events.base.predicates.OnlyWidget
 import tech.thatgravyboat.skyblockapi.api.events.chat.ChatReceivedEvent
 import tech.thatgravyboat.skyblockapi.api.events.hypixel.ServerChangeEvent
@@ -100,6 +101,7 @@ object ProfileAPI {
     }
 
     @Subscription
+    @OnlyOnSkyBlock
     fun onTick(event: TickEvent) {
         if (lastWorldSwap + 2500 < System.currentTimeMillis() && !this.isLoaded) {
             SkyBlockAPI.logger.error("Could not find way to determine profile name.")

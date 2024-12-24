@@ -15,4 +15,6 @@ object McFont {
     fun width(text: FormattedCharSequence): Int = self.width(text)
     fun width(text: String): Int = self.width(text)
     fun width(text: Char): Int = self.width(text.toString())
+
+    fun split(text: FormattedText, maxWidth: Int): List<FormattedCharSequence> = self.split(text, maxWidth)
 }

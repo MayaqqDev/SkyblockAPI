@@ -4,6 +4,8 @@ import com.mojang.blaze3d.platform.Window
 import com.mojang.brigadier.CommandDispatcher
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
+import net.minecraft.client.Options
+import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.components.ChatComponent
 import net.minecraft.client.gui.components.toasts.ToastManager
 import net.minecraft.client.gui.screens.ChatScreen
@@ -67,15 +69,12 @@ object McClient {
         }
 
     val scoreboardTitle get() = self.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR)?.displayName
+    val serverCommands: CommandDispatcher<SharedSuggestionProvider>? get() = self.connection?.commands
 
-    val toasts: ToastManager
-        get() = self.toastManager
-
-    val serverCommands: CommandDispatcher<SharedSuggestionProvider>?
-        get() = self.connection?.commands
-
-    val chat: ChatComponent
-        get() = self.gui.chat
+    val toasts: ToastManager get() = self.toastManager
+    val gui: Gui get() = self.gui
+    val chat: ChatComponent get() = gui.chat
+    val options: Options get() = self.options
 
     fun tell(action: () -> Unit) {
         self.schedule(action)
