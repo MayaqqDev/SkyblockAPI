@@ -29,6 +29,11 @@ object ProfileAPI {
         "Profile: (?<name>.+)",
     )
 
+    private val skyBlockXPRegex = widgetGroup.create(
+        "skyblockxp",
+        "\\s*SB Level: \\[(?<level>\\d+)\\] (?<xp>\\d+).*",
+    )
+
     private val profileChatRegex = RegexGroup.CHAT.group("profile").create(
         "name",
         "You are playing on profile: (?<name>.+)",
@@ -64,14 +69,17 @@ object ProfileAPI {
                     this.profileName = name.trim(' ', '♲')
                     ProfileStorage.setProfileType(ProfileType.IRONMAN)
                 }
+
                 'Ⓑ' -> {
                     this.profileName = name.trim(' ', 'Ⓑ')
                     ProfileStorage.setProfileType(ProfileType.BINGO)
                 }
+
                 '☀' -> {
                     this.profileName = name.trim(' ', '☀')
                     ProfileStorage.setProfileType(ProfileType.STRANDED)
                 }
+
                 else -> {
                     this.profileName = name
                     ProfileStorage.setProfileType(ProfileType.NORMAL)
@@ -85,6 +93,11 @@ object ProfileAPI {
                 ProfileChangeEvent(this.profileName!!).post()
             }
             this.isLoaded = true
+        }
+
+        skyBlockXPRegex.anyMatch(event.new, "level", "xp") { (level, progress) ->
+            ProfileStorage.setSkyBlockLevelProgress(progress.toInt())
+            ProfileStorage.setSkyBlockLevel(level.toInt())
         }
     }
 
