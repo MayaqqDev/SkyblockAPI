@@ -23,15 +23,17 @@ import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.match
 @Module
 object ProfileAPI {
 
+    private val widgetGroup = RegexGroup.TABLIST_WIDGET.group("profile")
+
     // Profile: Watermelon ♲
-    private val profileRegex = RegexGroup.TABLIST_WIDGET.group("profile").create(
+    private val profileRegex = widgetGroup.create(
         "name",
         "Profile: (?<name>.+)",
     )
 
     private val skyBlockXPRegex = widgetGroup.create(
         "skyblockxp",
-        "\\s*SB Level: \\[(?<level>\\d+)\\] (?<xp>\\d+).*",
+        "\\s*SB Level: \\[(?<level>\\d+)] (?<xp>\\d+).*",
     )
 
     private val profileChatRegex = RegexGroup.CHAT.group("profile").create(
