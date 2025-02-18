@@ -6,10 +6,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.event.Event
-import net.fabricmc.fabric.api.event.player.AttackBlockCallback
-import net.fabricmc.fabric.api.event.player.UseBlockCallback
-import net.fabricmc.fabric.api.event.player.UseEntityCallback
-import net.fabricmc.fabric.api.event.player.UseItemCallback
+import net.fabricmc.fabric.api.event.player.*
 import net.minecraft.core.BlockPos
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.InteractionResult
@@ -68,7 +65,18 @@ object MiscEventHandler {
             }
             InteractionResult.PASS
         }
-        AttackBlockCallback.EVENT.register { _, _, _, pos, _ ->
+        AttackEntityCallback.EVENT.register { player, _, hand, entity, _ ->
+            val stack = player.getItemInHand(hand)
+            if (LeftClickEntityEvent(entity, stack).post(SkyBlockAPI.eventBus)) {
+                InteractionResult.FAIL
+            }
+            InteractionResult.PASS
+        }
+        AttackBlockCallback.EVENT.register { player, _, hand, pos, _ ->
+            val stack = player.getItemInHand(hand)
+            if (LeftClickBlockEvent(pos, stack).post(SkyBlockAPI.eventBus)) {
+                InteractionResult.FAIL
+            }
             blocksClicked.put(pos, Unit)
             InteractionResult.PASS
         }

@@ -3,6 +3,7 @@ package tech.thatgravyboat.skyblockapi.api.profile.profile
 import tech.thatgravyboat.skyblockapi.api.SkyBlockAPI
 import tech.thatgravyboat.skyblockapi.api.data.stored.ProfileStorage
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
+import tech.thatgravyboat.skyblockapi.api.events.base.predicates.OnlyOnSkyBlock
 import tech.thatgravyboat.skyblockapi.api.events.base.predicates.OnlyWidget
 import tech.thatgravyboat.skyblockapi.api.events.chat.ChatReceivedEvent
 import tech.thatgravyboat.skyblockapi.api.events.hypixel.ServerChangeEvent
@@ -22,10 +23,17 @@ import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.match
 @Module
 object ProfileAPI {
 
+    private val widgetGroup = RegexGroup.TABLIST_WIDGET.group("profile")
+
     // Profile: Watermelon ♲
-    private val profileRegex = RegexGroup.TABLIST_WIDGET.group("profile").create(
+    private val profileRegex = widgetGroup.create(
         "name",
         "Profile: (?<name>.+)",
+    )
+
+    private val skyBlockXPRegex = widgetGroup.create(
+        "skyblockxp",
+        "\\s*SB Level: \\[(?<level>\\d+)] (?<xp>\\d+).*",
     )
 
     private val profileChatRegex = RegexGroup.CHAT.group("profile").create(
@@ -45,6 +53,8 @@ object ProfileAPI {
 
     val sbLevel: Int get() = ProfileStorage.getSkyBlockLevel()
 
+    val sbLevelProgress: Int get() = ProfileStorage.getSkyBlockLevelProgress()
+
     val coop: Boolean get() = ProfileStorage.isCoop()
 
     @Subscription
@@ -63,14 +73,17 @@ object ProfileAPI {
                     this.profileName = name.trim(' ', '♲')
                     ProfileStorage.setProfileType(ProfileType.IRONMAN)
                 }
+
                 'Ⓑ' -> {
                     this.profileName = name.trim(' ', 'Ⓑ')
                     ProfileStorage.setProfileType(ProfileType.BINGO)
                 }
+
                 '☀' -> {
                     this.profileName = name.trim(' ', '☀')
                     ProfileStorage.setProfileType(ProfileType.STRANDED)
                 }
+
                 else -> {
                     this.profileName = name
                     ProfileStorage.setProfileType(ProfileType.NORMAL)
@@ -84,6 +97,11 @@ object ProfileAPI {
                 ProfileChangeEvent(this.profileName!!).post()
             }
             this.isLoaded = true
+        }
+
+        skyBlockXPRegex.anyMatch(event.new, "level", "xp") { (level, progress) ->
+            ProfileStorage.setSkyBlockLevelProgress(progress.toInt())
+            ProfileStorage.setSkyBlockLevel(level.toInt())
         }
     }
 
@@ -100,6 +118,7 @@ object ProfileAPI {
     }
 
     @Subscription
+    @OnlyOnSkyBlock
     fun onTick(event: TickEvent) {
         if (lastWorldSwap + 2500 < System.currentTimeMillis() && !this.isLoaded) {
             SkyBlockAPI.logger.error("Could not find way to determine profile name.")
