@@ -1,8 +1,15 @@
 package tech.thatgravyboat.skyblockapi.api.events.base
 
+import kotlin.reflect.KClass
+
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
 annotation class Subscription(
+    /**
+     * The event that will be received, only is required if there are no parameters.
+     */
+    vararg val event: KClass<out SkyBlockEvent> = [],
+
     /**
      * The priority of when the event will be called, lower priority will be called first, see the companion object.
      */

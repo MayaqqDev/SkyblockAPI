@@ -42,6 +42,22 @@ enum class TabWidget {
     EVENT_TRACKERS,
     FROZEN_CORPSES,
     ACTIVE_EFFECTS,
+    MINING_EVENT,
+    TIMERS,
+    COMPOSTER,
+    JACOBS_CONTEST,
+    PESTS,
+    VISITORS,
+    RNG_METER,
+    DOWNED,
+    TEAM_DEATHS,
+    DISCOVERIES,
+    PUZZLES,
+    REPUTATION,
+    TROPHY_FISH,
+    FACTION_QUESTS,
+    FOREST_WHISPERS,
+    MOONGLADE_BEACON,
     ;
 
     private val string = toFormattedName()

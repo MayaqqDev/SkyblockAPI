@@ -23,9 +23,22 @@ class RegisterCommandsEvent(private val dispatcher: CommandDispatcher<FabricClie
     }
 
     fun register(command: String, builder: LiteralCommandBuilder.() -> Unit) {
+        if (command.contains(" ")) {
+            ClientCommandManager.literal(command.substringBefore(" "))
+                ?.apply { LiteralCommandBuilder(this).then(command.substringAfter(" "), action = builder) }
+                ?.let(dispatcher::register)
+            return
+        }
+
         ClientCommandManager.literal(command)
             ?.apply { LiteralCommandBuilder(this).apply(builder) }
             ?.let(dispatcher::register)
+    }
+
+    fun registerWithCallback(command: String, callback: CommandContext<FabricClientCommandSource>.() -> Unit) {
+        register(command) {
+            this.callback(callback)
+        }
     }
 }
 
@@ -42,6 +55,12 @@ class CommandBuilder<B : ArgumentBuilder<FabricClientCommandSource, B>> internal
 
     fun then(vararg names: String, action: LiteralCommandBuilder.() -> Unit): CommandBuilder<B> {
         for (name in names) {
+            if (name.contains(" ")) {
+                val builder = CommandBuilder(ClientCommandManager.literal(name.substringBefore(" ")))
+                builder.then(name.substringAfter(" "), action = action)
+                this.builder.then(builder.builder)
+                continue
+            }
             val builder = CommandBuilder(ClientCommandManager.literal(name))
             builder.action()
             this.builder.then(builder.builder)
@@ -67,6 +86,12 @@ class CommandBuilder<B : ArgumentBuilder<FabricClientCommandSource, B>> internal
         suggestions: SuggestionProvider<FabricClientCommandSource>? = null,
         action: ArgumentCommandBuilder<T>.() -> Unit,
     ): CommandBuilder<B> {
+        if (name.contains(" ")) {
+            val builder = CommandBuilder(ClientCommandManager.literal(name.substringBefore(" ")))
+            builder.then(name.substringAfter(" "), argument, suggestions, action)
+            this.builder.then(builder.builder)
+            return this
+        }
         val builder = CommandBuilder(
             ClientCommandManager.argument(name, argument).apply {
                 if (suggestions != null) suggests(suggestions)
@@ -77,5 +102,29 @@ class CommandBuilder<B : ArgumentBuilder<FabricClientCommandSource, B>> internal
         return this
     }
 
-    internal fun build(): ArgumentBuilder<FabricClientCommandSource, B> = builder
+    fun thenCallback(vararg names: String, block: CommandContext<FabricClientCommandSource>.() -> Unit): CommandBuilder<B> {
+        return then(*names) {
+            this.callback(block)
+        }
+    }
+
+    fun <T> thenCallback(
+        name: String,
+        argument: ArgumentType<T>,
+        suggestions: Collection<String>,
+        block: CommandContext<FabricClientCommandSource>.() -> Unit,
+    ): CommandBuilder<B> = then(name, argument, suggestions) {
+        this.callback(block)
+    }
+
+
+    fun <T> thenCallback(
+        name: String,
+        argument: ArgumentType<T>,
+        suggestions: SuggestionProvider<FabricClientCommandSource>? = null,
+        block: CommandContext<FabricClientCommandSource>.() -> Unit,
+    ): CommandBuilder<B> = then(name, argument, suggestions) {
+        this.callback(block)
+    }
+
 }

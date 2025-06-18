@@ -1,6 +1,7 @@
 package tech.thatgravyboat.skyblockapi.api.profile.effects
 
 import kotlinx.datetime.Instant
+import me.owdding.ktmodules.Module
 import tech.thatgravyboat.skyblockapi.api.data.stored.EffectsStorage
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
 import tech.thatgravyboat.skyblockapi.api.events.base.predicates.OnlyWidget
@@ -12,7 +13,6 @@ import tech.thatgravyboat.skyblockapi.api.events.misc.RegisterCommandsEvent
 import tech.thatgravyboat.skyblockapi.api.events.screen.ContainerInitializedEvent
 import tech.thatgravyboat.skyblockapi.api.profile.community.CommunityCenterAPI.cookieAteRegex
 import tech.thatgravyboat.skyblockapi.helpers.McClient
-import tech.thatgravyboat.skyblockapi.modules.Module
 import tech.thatgravyboat.skyblockapi.utils.extentions.cleanName
 import tech.thatgravyboat.skyblockapi.utils.extentions.getRawLore
 import tech.thatgravyboat.skyblockapi.utils.extentions.parseDuration
@@ -52,7 +52,7 @@ object EffectsAPI {
 
     val boosterCookieExpireTime get() = EffectsStorage.boosterCookieExpireTime
     val godPotionDuration get() = EffectsStorage.godPotionDuration
-
+    val isBoosterCookieActive get() = EffectsStorage.boosterCookieExpireTime.until().isPositive()
 
     @Subscription
     fun onChat(event: ChatReceivedEvent.Pre) {
@@ -111,30 +111,28 @@ object EffectsAPI {
 
     @Subscription
     fun onCommandsRegistration(event: RegisterCommandsEvent) {
-        event.register("sbapi") {
-            then("effects") {
-                then("copy") {
-                    callback {
-                        val effects = listOf(
-                            "Booster Cookie Expire Time: $boosterCookieExpireTime",
-                            "God Potion Duration: $godPotionDuration",
-                        )
+        event.register("sbapi effects") {
+            then("copy") {
+                callback {
+                    val effects = listOf(
+                        "Booster Cookie Expire Time: $boosterCookieExpireTime",
+                        "God Potion Duration: $godPotionDuration",
+                    )
 
-                        Text.of("[SkyBlockAPI] Copied Effects Data to clipboard.") {
-                            this.color = TextColor.YELLOW
-                        }.send()
+                    Text.of("[SkyBlockAPI] Copied Effects Data to clipboard.") {
+                        this.color = TextColor.YELLOW
+                    }.send()
 
-                        McClient.clipboard = effects.joinToString("\n")
-                    }
+                    McClient.clipboard = effects.joinToString("\n")
                 }
-                then("reset") {
-                    callback {
-                        EffectsStorage.boosterCookieExpireTime = Instant.DISTANT_PAST
-                        EffectsStorage.godPotionDuration = Duration.ZERO
-                        Text.of("[SkyBlockAPI] Reset Effects Data.") {
-                            this.color = TextColor.YELLOW
-                        }.send()
-                    }
+            }
+            then("reset") {
+                callback {
+                    EffectsStorage.boosterCookieExpireTime = Instant.DISTANT_PAST
+                    EffectsStorage.godPotionDuration = Duration.ZERO
+                    Text.of("[SkyBlockAPI] Reset Effects Data.") {
+                        this.color = TextColor.YELLOW
+                    }.send()
                 }
             }
         }

@@ -1,11 +1,11 @@
 package tech.thatgravyboat.skyblockapi.api.area.hub
 
+import me.owdding.ktmodules.Module
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
 import tech.thatgravyboat.skyblockapi.api.events.info.ScoreboardUpdateEvent
 import tech.thatgravyboat.skyblockapi.api.events.info.TabListHeaderFooterChangeEvent
 import tech.thatgravyboat.skyblockapi.api.events.location.ServerDisconnectEvent
 import tech.thatgravyboat.skyblockapi.api.events.profile.ProfileChangeEvent
-import tech.thatgravyboat.skyblockapi.modules.Module
 import tech.thatgravyboat.skyblockapi.utils.extentions.toIntValue
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexGroup
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.anyMatch
@@ -63,11 +63,8 @@ object SpookyFestivalAPI {
         } ?: reset()
     }
 
-    @Subscription
-    fun onProfileChange(event: ProfileChangeEvent) = reset()
-
-    @Subscription
-    fun onDisconnect(event: ServerDisconnectEvent) = reset()
+    @Subscription(ProfileChangeEvent::class, ServerDisconnectEvent::class)
+    fun onProfileChange() = reset()
 
     private fun reset() {
         onGoing = false

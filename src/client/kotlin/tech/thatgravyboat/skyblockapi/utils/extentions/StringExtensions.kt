@@ -4,6 +4,7 @@ import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findGroup
 import tech.thatgravyboat.skyblockapi.utils.regex.Regexes
 import java.text.DecimalFormat
 import java.text.NumberFormat
+import java.util.*
 import kotlin.math.pow
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -28,19 +29,19 @@ private val romanNumerals = mapOf(
     'M' to 1000,
 )
 
-internal fun String?.toIntValue(): Int = runCatching {
+fun String?.toIntValue(): Int = runCatching {
     this?.replace(",", "")?.toInt() ?: 0
 }.getOrDefault(0)
 
-internal fun String?.toLongValue(): Long = runCatching {
+fun String?.toLongValue(): Long = runCatching {
     this?.replace(",", "")?.toLong() ?: 0
 }.getOrDefault(0)
 
-internal fun String?.toFloatValue(): Float = runCatching {
+fun String?.toFloatValue(): Float = runCatching {
     this?.replace(",", "")?.toFloat() ?: 0f
 }.getOrDefault(0f)
 
-internal fun String?.parseFormattedLong(default: Long = 0L): Long = runCatching {
+fun String?.parseFormattedLong(default: Long = 0L): Long = runCatching {
     val commaless = this?.lowercase()?.replace(",", "")
     val multiplier = formattedMultiplier.entries.firstOrNull { commaless?.endsWith(it.key) == true }?.value
     return@runCatching if (multiplier != null) {
@@ -50,9 +51,9 @@ internal fun String?.parseFormattedLong(default: Long = 0L): Long = runCatching 
     }
 }.getOrDefault(default)
 
-internal fun String?.parseFormattedInt(default: Int = 0): Int = parseFormattedLong(default.toLong()).toInt()
+fun String?.parseFormattedInt(default: Int = 0): Int = parseFormattedLong(default.toLong()).toInt()
 
-internal fun String?.parseFormattedDouble(): Double = runCatching {
+fun String?.parseFormattedDouble(): Double = runCatching {
     val commaless = this?.lowercase()?.replace(",", "")
     val multiplier = formattedMultiplier.entries.firstOrNull { commaless?.endsWith(it.key) == true }?.value
     return@runCatching if (multiplier != null) {
@@ -62,11 +63,11 @@ internal fun String?.parseFormattedDouble(): Double = runCatching {
     }
 }.getOrDefault(0.0)
 
-internal fun String?.parseFormattedFloat(): Float = parseFormattedDouble().toFloat()
+fun String?.parseFormattedFloat(): Float = parseFormattedDouble().toFloat()
 
-internal fun String?.parseRomanOrArabic(): Int = parseRomanNumeral().takeIf { it != 0 } ?: toIntValue()
+fun String?.parseRomanOrArabic(): Int = parseRomanNumeral().takeIf { it != 0 } ?: toIntValue()
 
-internal fun String?.parseDuration(): Duration? = runCatching {
+fun String?.parseDuration(): Duration? = runCatching {
     var total = 0L
     var current = 0L
     this?.forEach {
@@ -88,7 +89,7 @@ internal fun String?.parseDuration(): Duration? = runCatching {
     return@runCatching total.milliseconds
 }.getOrNull()
 
-internal fun String?.parseWordDuration(): Duration? = runCatching {
+fun String?.parseWordDuration(): Duration? = runCatching {
     var total = 0L
     var current = ""
     this?.split(" ", ", ", " and ")?.forEach {
@@ -112,7 +113,7 @@ internal fun String?.parseWordDuration(): Duration? = runCatching {
     return@runCatching total.seconds
 }.getOrNull()
 
-internal fun String?.parseColonDuration(): Duration? = runCatching {
+fun String?.parseColonDuration(): Duration? = runCatching {
     val splits = this?.split(":") ?: return@runCatching null
     var currentMultiplier = (60.0.pow(splits.size - 1)).toLong()
     var total = 0L
@@ -123,7 +124,7 @@ internal fun String?.parseColonDuration(): Duration? = runCatching {
     return@runCatching total.seconds
 }.getOrNull()
 
-internal fun String?.parseRomanNumeral(): Int = runCatching {
+fun String?.parseRomanNumeral(): Int = runCatching {
     var total = 0
     this?.forEachIndexed { index, c ->
         val value = romanNumerals[c] ?: return@forEachIndexed
@@ -133,8 +134,7 @@ internal fun String?.parseRomanNumeral(): Int = runCatching {
     return@runCatching total
 }.getOrDefault(0)
 
-internal fun <T : Enum<T>> Enum<T>.toFormattedName(): String =
-    name.split("_").joinToString(" ") { it.lowercase().replaceFirstChar(Char::uppercase) }
+fun <T : Enum<T>> Enum<T>.toFormattedName(): String = name.toTitleCase()
 
 private val regexGroup = Regexes.group("string")
 
@@ -145,17 +145,18 @@ private val cleanPlayerNameRegex = regexGroup.create(
 
 private val formattingCodesRegex = Regex("§.")
 
-internal fun String.cleanPlayerName(): String {
+fun String.cleanPlayerName(): String {
     return cleanPlayerNameRegex.findGroup(this, "name") ?: this
 }
 
+fun Number.toFormattedString(): String = NumberFormat.getNumberInstance().format(this)
 fun Int.toFormattedString(): String = NumberFormat.getNumberInstance().format(this)
 fun Long.toFormattedString(): String = NumberFormat.getNumberInstance().format(this)
 fun Float.toFormattedString(): String = DecimalFormat.getNumberInstance().format(this)
 fun Double.toFormattedString(): String = DecimalFormat.getNumberInstance().format(this)
 
 private val thousandsPlace = listOf("", "M", "MM", "MMM")
-private val hundreadsPlace = listOf("", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM")
+private val hundredsPlace = listOf("", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM")
 private val tensPlace = listOf("", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC")
 private val onesPlace = listOf("", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX")
 
@@ -164,7 +165,7 @@ private val onesPlace = listOf("", "I", "II", "III", "IV", "V", "VI", "VII", "VI
  */
 fun Int.toRomanNumeral(subtractive: Boolean = false): String {
     if (subtractive) {
-        return thousandsPlace[this / 1000] + hundreadsPlace[this % 1000 / 100] + tensPlace[this % 100 / 10] + onesPlace[this % 10]
+        return thousandsPlace[this / 1000] + hundredsPlace[this % 1000 / 100] + tensPlace[this % 100 / 10] + onesPlace[this % 10]
     } else {
         var number = this
         val roman = StringBuilder()
@@ -180,6 +181,8 @@ fun Int.toRomanNumeral(subtractive: Boolean = false): String {
 
 fun String.stripColor(): String = formattingCodesRegex.replace(this, "")
 
+fun String.capitalize() = lowercase().split(" ", "_").joinToString(" ") { it.replaceFirstChar(Char::titlecase) }
+fun String.toTitleCase() = capitalize()
 
 fun String.trimIgnoreColor(): String {
     val start = colorCodesStart.find(this)?.groups?.get("start")?.value ?: ""
@@ -187,3 +190,5 @@ fun String.trimIgnoreColor(): String {
     val trimmed = this.removePrefix(start).removeSuffix(end)
     return start.replace(" ", "") + trimmed + end.replace(" ", "")
 }
+
+fun UUID.toDashlessString(): String = toString().replace("-", "")

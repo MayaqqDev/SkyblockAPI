@@ -1,5 +1,6 @@
 package tech.thatgravyboat.skyblockapi.impl.events.stats
 
+import me.owdding.ktmodules.Module
 import net.minecraft.util.StringUtil
 import org.intellij.lang.annotations.Language
 import tech.thatgravyboat.skyblockapi.api.SkyBlockAPI
@@ -7,7 +8,6 @@ import tech.thatgravyboat.skyblockapi.api.data.item.ArmorStack
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
 import tech.thatgravyboat.skyblockapi.api.events.chat.ActionBarReceivedEvent
 import tech.thatgravyboat.skyblockapi.api.events.info.*
-import tech.thatgravyboat.skyblockapi.modules.Module
 import tech.thatgravyboat.skyblockapi.utils.extentions.*
 import tech.thatgravyboat.skyblockapi.utils.regex.Destructured
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexGroup
@@ -101,6 +101,15 @@ object ActionBarEventHandler {
             },
         ) { old, it ->
             SecretsActionBarWidgetChangeEvent(it["current"].toIntValue(), it["max"].toIntValue(), old, it.string)
+        },
+        // §9Pressure: ❍8%
+        ActionBarWidgetType(
+            ActionBarWidget.PRESSURE, "§9Pressure: ❍(?<pressure>\\d+)%",
+            {
+                PressureActionBarWidgetChangeEvent(0, it.string, "")
+            },
+        ) { old, it ->
+            PressureActionBarWidgetChangeEvent(it["pressure"].toIntValue(), old, it.string)
         },
         // §2936/3k Drill Fuel
         ActionBarWidgetType(ActionBarWidget.DRILL_FUEL, "§2(?<current>\\d+)/(?<max>\\d+[kmb]?) Drill Fuel") { old, it ->

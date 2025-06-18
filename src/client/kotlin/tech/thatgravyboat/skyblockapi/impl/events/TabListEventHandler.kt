@@ -1,6 +1,6 @@
 package tech.thatgravyboat.skyblockapi.impl.events
 
-import net.minecraft.network.chat.CommonComponents
+import me.owdding.ktmodules.Module
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundTabListPacket
 import tech.thatgravyboat.skyblockapi.api.SkyBlockAPI
@@ -16,13 +16,13 @@ import tech.thatgravyboat.skyblockapi.api.events.level.PacketReceivedEvent
 import tech.thatgravyboat.skyblockapi.api.events.time.TickEvent
 import tech.thatgravyboat.skyblockapi.api.location.LocationAPI
 import tech.thatgravyboat.skyblockapi.helpers.McClient
-import tech.thatgravyboat.skyblockapi.modules.Module
 import tech.thatgravyboat.skyblockapi.utils.Logger
 import tech.thatgravyboat.skyblockapi.utils.extentions.chunked
 import tech.thatgravyboat.skyblockapi.utils.extentions.peek
 import tech.thatgravyboat.skyblockapi.utils.mc.displayName
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexGroup
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.contains
+import tech.thatgravyboat.skyblockapi.utils.text.CommonText
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 
 private const val TAB_LIST_LENGTH = 80
@@ -32,7 +32,7 @@ object TabListEventHandler {
 
     private val infoRegex = RegexGroup.TABLIST.create(
         "info",
-        "(?:Info|Account Info)$",
+        "(?:Info|Account Info|Player Stats|Dungeon Stats)$",
     )
 
     private val widgetGroup = RegexGroup.TABLIST_WIDGET
@@ -53,10 +53,9 @@ object TabListEventHandler {
         TabWidget.GOOD_TO_KNOW to widgetGroup.create("good_to_know", "Good to know:"),
         TabWidget.ADVERTISEMENT to widgetGroup.create("advertisement", "Advertisement:"),
         TabWidget.TRAPPER to widgetGroup.create("trapper", "Trapper:"),
-        TabWidget.EVENT to widgetGroup.create("event_Trackers", "Event Trackers:"),
+        TabWidget.EVENT_TRACKERS to widgetGroup.create("event_Trackers", "Event Trackers:"),
         TabWidget.FROZEN_CORPSES to widgetGroup.create("frozen_corpses", "Frozen Corpses:"),
-
-        TabWidget.AREA to widgetGroup.create("area", "Area: (?<area>.*)"),
+        TabWidget.AREA to widgetGroup.create("area", "(?:Area|Dungeon): (?<area>.*)"),
         TabWidget.PROFILE to widgetGroup.create("profile", "Profile: (?<profile>.*)"),
         TabWidget.ELECTION to widgetGroup.create("election", "Election: (?<election>.*)"),
         TabWidget.EVENT to widgetGroup.create("event", "Event: (?<event>.*)"),
@@ -64,12 +63,28 @@ object TabListEventHandler {
         TabWidget.MINIONS to widgetGroup.create("minions", "Minions: (?<party>.*)"),
         TabWidget.SHEN to widgetGroup.create("shen", "Shen: \\((?<duration>[\\ddmsh,]+)\\)"),
         TabWidget.ACTIVE_EFFECTS to widgetGroup.create("active_effects", "Active Effects:(?: \\((?<amount>\\d+)\\))?"),
+        TabWidget.MINING_EVENT to widgetGroup.create("mining_event", "Mining Event: (?<event>.*)"),
+        TabWidget.TIMERS to widgetGroup.create("timers", "Timers:"),
+        TabWidget.COMPOSTER to widgetGroup.create("composter", "Composter:"),
+        TabWidget.JACOBS_CONTEST to widgetGroup.create("jacobs_contest", "Jacob's Contest:(?: (?<time>.*))?"),
+        TabWidget.PESTS to widgetGroup.create("pets", "Pests:"),
+        TabWidget.VISITORS to widgetGroup.create("visitors", "Visitors: \\((?<amount>\\d+)\\)"),
+        TabWidget.RNG_METER to widgetGroup.create("rng_meter", "RNG Meter"),
+        TabWidget.DOWNED to widgetGroup.create("downed", "Downed: (?<status>.*)"),
+        TabWidget.TEAM_DEATHS to widgetGroup.create("team_deaths", "Team Deaths: (?<amount>\\d+)"),
+        TabWidget.DISCOVERIES to widgetGroup.create("discoveries", "Discoveries: (?<amount>\\d+)"),
+        TabWidget.PUZZLES to widgetGroup.create("puzzles", "Puzzles: \\((?<amount>\\d+)\\)"),
+        TabWidget.REPUTATION to widgetGroup.create("reputation", "(?:Mage|Barbarian) Reputation:"),
+        TabWidget.TROPHY_FISH to widgetGroup.create("trophy_fish", "Trophy Fish:"),
+        TabWidget.FACTION_QUESTS to widgetGroup.create("faction_quests", "Faction Quests:"),
+        TabWidget.FOREST_WHISPERS to widgetGroup.create("forest_whispers", "Forest Whispers: (?<amount>[\\d,.]+)"),
+        TabWidget.MOONGLADE_BEACON to widgetGroup.create("moonglade_beacon", "Moonglade Beacon: (?<amount>[\\d,.]+) Stacks?")
     )
 
     private var tabList = emptyList<List<String>>()
 
-    private var header: Component = CommonComponents.EMPTY
-    private var footer: Component = CommonComponents.EMPTY
+    private var header: Component = CommonText.EMPTY
+    private var footer: Component = CommonText.EMPTY
 
     private val widgets = mutableMapOf<TabWidget, List<String>>()
 

@@ -1,5 +1,6 @@
 package tech.thatgravyboat.skyblockapi.api.area.dungeon
 
+import me.owdding.ktmodules.Module
 import tech.thatgravyboat.skyblockapi.api.datatype.DataTypes
 import tech.thatgravyboat.skyblockapi.api.datatype.getData
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
@@ -12,7 +13,6 @@ import tech.thatgravyboat.skyblockapi.api.events.location.IslandChangeEvent
 import tech.thatgravyboat.skyblockapi.api.events.screen.PlayerHotbarChangeEvent
 import tech.thatgravyboat.skyblockapi.api.location.SkyBlockIsland
 import tech.thatgravyboat.skyblockapi.helpers.McPlayer
-import tech.thatgravyboat.skyblockapi.modules.Module
 import tech.thatgravyboat.skyblockapi.utils.extentions.parseDuration
 import tech.thatgravyboat.skyblockapi.utils.extentions.parseRomanOrArabic
 import tech.thatgravyboat.skyblockapi.utils.extentions.toIntValue
@@ -182,7 +182,7 @@ object DungeonAPI {
                     }
                     return@findThenNull
                 }
-                val playerClass = DungeonClass.getByName(dungeonClass) ?: return@findThenNull
+                val playerClass = DungeonClass.getByName(dungeonClass)
                 val player = DungeonPlayer(name, playerClass, level.parseRomanOrArabic())
                 if (name == ownName) {
                     ownPlayer = player
